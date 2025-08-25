@@ -1,5 +1,8 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.DeckDto;
+import com.example.demo.io.JsonUtil;
+import com.example.demo.maper.DeckMapper;
 import com.example.demo.model.Card;
 import com.example.demo.model.Deck;
 import com.example.demo.model.Menu;
@@ -18,6 +21,7 @@ public class DeckServiceImpl implements DeckService {
     private final DeckRepository deckRepository;
     private final CardService cardService;
     private final SessionContext context;
+    private final JsonUtil jsonUtil;
     Scanner scanner = new Scanner(System.in);
 
     public void processDeckUpdate(List<Deck> decks) {
@@ -45,7 +49,8 @@ public class DeckServiceImpl implements DeckService {
     public void getDeckUpdateMenu() {
         while (true) {
             try {
-                System.out.println("enter deck name (or 'exit' to quit): ");
+                System.out.println("enter deck 'name' or 'exit' to quit: ");
+
                 String name = scanner.nextLine();
 
                 if ("exit".equalsIgnoreCase(name)) {
@@ -59,6 +64,14 @@ public class DeckServiceImpl implements DeckService {
                 } catch (RuntimeException e) {
                     System.out.println(e.getMessage());
                     continue;
+                }
+
+                System.out.println("you can save this deck to local json file -> write 'save'");
+                String saveCommand = scanner.nextLine();
+
+                if ("save".equalsIgnoreCase(saveCommand)) {
+                    DeckDto dto = DeckMapper.toDto(deck);
+                    jsonUtil.saveDecksToJsonFile(List.of(dto));
                 }
 
                 while (true) {

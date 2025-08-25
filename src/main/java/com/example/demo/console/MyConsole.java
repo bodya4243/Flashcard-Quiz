@@ -1,7 +1,5 @@
 package com.example.demo.console;
 
-import com.example.demo.model.Card;
-import com.example.demo.model.Deck;
 import com.example.demo.model.Menu;
 import com.example.demo.model.SessionContext;
 import com.example.demo.model.User;
@@ -10,14 +8,13 @@ import com.example.demo.repository.DeckRepository;
 import com.example.demo.repository.MenuRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.service.DeckService;
+import com.example.demo.service.MenuService;
 import com.example.demo.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.io.IOException;
 import java.util.Scanner;
 
 @RequiredArgsConstructor
@@ -31,11 +28,12 @@ public class MyConsole implements CommandLineRunner {
     private final MenuRepository menuRepository;
     private final UserRepository userRepository;
     private final DeckService deckService;
+    private final MenuService menuService;
 
     Scanner scanner = new Scanner(System.in);
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) throws IOException {
         while (true) {
             System.out.println("write \"register\" or \"login\"");
             System.out.println("you can always quit by writing \"stop\"");
@@ -48,7 +46,7 @@ public class MyConsole implements CommandLineRunner {
                 processLogin();
             }
 
-            processState(context.getCurrentMenu());
+            menuService.processState(context.getCurrentMenu());
 
             System.out.println("type stop to exit");
 
@@ -59,26 +57,7 @@ public class MyConsole implements CommandLineRunner {
         }
     }
 
-    private void processState(Menu menu) {
-        System.out.println("choose the state of the program");
-
-        String command = scanner.nextLine().trim();
-
-        if ("update".equalsIgnoreCase(command)) {
-            List<Deck> decks = menu.getDecks();
-
-            if (decks.isEmpty()) {
-                System.out.println("there are no decks present");
-                System.out.println("create deck");
-                deckService.processDeckCreating(menu);
-            }
-
-            System.out.println("update deck");
-            deckService.processDeckUpdate(decks);
-        }
-    }
-
-    private User processRegister() {
+    private void processRegister() {
         System.out.println("write your name:");
         String name = scanner.nextLine();
 
@@ -101,11 +80,9 @@ public class MyConsole implements CommandLineRunner {
         context.setCurrentMenu(savedUser.getMenu());
 
         System.out.println("hello: " + savedUser.getName());
-
-        return savedUser;
     }
 
-    private User processLogin() {
+    private void processLogin() {
         while (true) {
             System.out.println("write your email:");
             String email = scanner.nextLine();
@@ -121,14 +98,14 @@ public class MyConsole implements CommandLineRunner {
                 Menu menu = menuRepository.findByIdWithDecks(loggedUser.getMenu().getId());
                 context.setCurrentMenu(menu);
 
-                return loggedUser;
+                return;
             } catch (Exception e) {
                 System.out.println(e.getMessage());
                 System.out.println("try again (or type 'exit' to cancel)");
 
                 String command = scanner.nextLine();
                 if ("exit".equalsIgnoreCase(command)) {
-                    return null;
+                    return;
                 }
             }
         }

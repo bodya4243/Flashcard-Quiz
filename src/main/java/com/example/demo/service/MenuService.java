@@ -10,5 +10,9 @@ import java.util.List;
 
 
 public interface MenuService {
+    void processState(Menu menu) throws IOException;
+
+    void processLearn(List<Deck> decks);
+
     String saveMenuToJson(Menu menu) throws JsonProcessingException, IOException;
 }
